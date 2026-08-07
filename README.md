@@ -17,7 +17,7 @@ kuramoto-monografia/
 │   ├── figura1_kuramoto.py      # Figura 1: sincronización sin retardo
 │   ├── figura2_kuramoto_delay.py# Figura 2: ondas viajeras con retardo (dKM)
 │   ├── figura3_autovalores.py   # Figura 3: análisis espectral (autocontenido, no depende de data/)
-│   └── figura4_evolucion_modos.py # Figura 4: espectro modal (descomposición de Galerkin)
+│   └── figura4_evolucion_modos.py # Figura 4: espectro modal (descomposición de Fourier)
 ├── data/       # Resultados numéricos intermedios (.npz), generados por run_simulations.py
 ├── Figuras/    # Figuras finales en PDF, usadas en la monografía (.tex)
 └── requirements.txt
