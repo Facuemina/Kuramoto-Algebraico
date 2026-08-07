@@ -47,13 +47,12 @@ kuramoto-monografia/
    python scripts/figura4_evolucion_modos.py
    ```
 
-Los PDFs quedan en `Figuras/`, listos para ser incluidos en el `.tex` de la
-monografía (`\includegraphics{Figuras/...}`).
+Los PDFs quedan en `Figuras/`.
 
 ## Notas de reproducibilidad
 
 - El barrido en `kappa` (Figuras 1 y 2, panel inferior) usa por defecto
-  `T_END_SWEEP = 1.0 s` y 20 valores de `kappa` para que la corrida sea
+  `T_END_SWEEP = 3.0 s` y 20 valores de `kappa` para que la corrida sea
   rápida. El paper original de referencia usa ventanas más largas (10 s) y
   más puntos; estos valores pueden ajustarse en `src/config.py`.
 - La evolución temporal a `kappa = 0.5` (Figuras 1, 2 y 4) usa una semilla
