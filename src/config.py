@@ -24,7 +24,7 @@ V_PROP = 483.87         # Velocidad de propagación (determina el retardo tau = 
 # ---------------------------------------------------------------
 # Nota: el paper original usa más puntos; acá se reduce a 20 por velocidad.
 KAPPAS = np.logspace(-4, 1, 20)
-T_END_SWEEP = 1.0       # El paper usa 10s; se reduce a 1s para una corrida rápida
+T_END_SWEEP = 3.0       # El paper usa 10s; se reduce a 3s para una corrida rápida
 DT = 0.001              # Paso de integración RK4 (modelo original)
 ZETA_FACTOR = 5         # zeta = DT * ZETA_FACTOR (paso del modelo complejo)
 ZETA = DT * ZETA_FACTOR
