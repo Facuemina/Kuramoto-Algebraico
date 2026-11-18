@@ -1,63 +1,133 @@
-# Predicción analítica de patrones espacio-temporales en el modelo de Kuramoto con retardos temporales
+# Kuramoto-Algebraico
 
-Código de simulación que acompaña a la monografía sobre el enfoque algebraico
-de Muller aplicado al modelo de Kuramoto con retardos temporales dependientes
-de la distancia (dKM), en base al trabajo de Budzinski et al. (2023).
+Spectral prediction of traveling waves in the Kuramoto model with distance-dependent time delays.
 
-## Estructura del repositorio
+This repository implements, from scratch in Python, the analytical framework of
+[Budzinski et al. (2023)](https://doi.org/10.1103/PhysRevResearch.5.013159), which builds on the
+algebraic approach to the Kuramoto model of [Muller, Mináč & Nguyen (2021)](https://doi.org/10.1103/PhysRevE.104.L022201).
+It accompanies a monograph written as the final project of a Complex Systems course
+(in Spanish: [`docs/Final_Sistemas_Complejos-Facundo_Emina.pdf`](docs/Final_Sistemas_Complejos-Facundo_Emina.pdf)).
+
+## The question
+
+In the Kuramoto model, coupled phase oscillators can synchronize. Real networks, such as the cortex,
+have transmission delays that grow with distance, and delays usually force researchers to rely on
+numerical integration. Sleep spindles, for example, appear as rotating waves rather than as a
+perfectly synchronized state. Can the emergent spatiotemporal pattern be **predicted analytically**
+from the network structure and the delays?
+
+## The method in short
+
+1. **Nonlinear model (ground truth).** N phase oscillators with delayed coupling,
+   `dθ_k/dt = ω + κ Σ_l A_kl sin(θ_l(t − τ_kl) − θ_k(t))`, integrated numerically with RK4.
+2. **Complex-valued linear model.** Following Muller et al., the dynamics are rewritten in a complex
+   state `x = exp(iψ)`, which obeys a linear equation `dx/dt = Mx`. The argument of `x(t)` follows the
+   phases of the original nonlinear model. With delays, `M = diag(iω) + κ (exp(−iωτ) ∘ A)`, where `∘` is the
+   Hadamard (element-wise) product.
+3. **Stepwise exact solution.** The state is advanced with the matrix exponential
+   `x(t+ζ) = Λ[exp(iωζ) exp(Wζ) x(t)]`, where `Λ` renormalizes each component to unit modulus.
+4. **Spectral analysis.** On a ring graph, `W` is circulant, so its eigenvectors are discrete Fourier
+   modes. The eigenvalue with the largest real part selects the pattern the network will converge to.
+
+## Results (ring graph, N = 100)
+
+- **The complex-valued model reproduces the nonlinear model.** Phase trajectories and the order
+  parameter `r` as a function of coupling `κ` coincide between the two methods, with and without delays
+  (Figures 1 and 2).
+- **Without delays,** `r → 1` for large `κ` (global synchrony), and the dominant eigenmode is the
+  homogeneous one (all phases equal).
+- **With delays,** `r` stays near zero (≈ 0.1, consistent with finite-size noise) for all `κ`. This
+  does not mean disorder: the network self-organizes into a **traveling wave** (Figure 2).
+- **The delay operator rotates the eigenvalues in the complex plane.** The homogeneous mode loses
+  dominance, and a degenerate pair of higher wavenumber modes (modes 3 and 99, one the conjugate of the
+  other) gets the largest real part. They represent waves of the same spatial frequency traveling in
+  opposite directions (Figure 3).
+- **The dominant mode emerges from random initial conditions.** Projecting the simulated state onto
+  the Fourier basis shows that all modes start with similar small amplitudes, and mode 3 grows until it
+  dominates (Figure 4). Small asymmetries in the initial noise break the direction degeneracy.
+
+**Scope.** The human connectome analysis (998-node network from the Human Connectome Project, Figure 5
+of the monograph) is taken from Budzinski et al. and is discussed in the monograph, but it is **not**
+reproduced in this repository. All simulations here use the ring graph.
+
+<!-- TODO: embed PNG versions of Figures 2, 3 and 4 here, for example:
+![Traveling wave with delays](Figuras/figura2_kuramoto_delay.png)
+-->
+
+## Repository structure
 
 ```
-kuramoto-monografia/
+Kuramoto-Algebraico/
 ├── src/
-│   ├── functions.py   # Integrador RK4, dinámica del dKM, paso del modelo complejo, r(t)
-│   ├── network.py     # Grafo de anillo, matrices de retardo, base de Fourier discreta
-│   └── config.py      # Parámetros compartidos por todas las simulaciones
+│   ├── functions.py    # RK4 integrator, dKM dynamics, complex-model step, order parameter r(t)
+│   ├── network.py      # ring graph, delay matrices, discrete Fourier basis
+│   └── config.py       # parameters shared by all simulations
 ├── scripts/
-│   ├── run_simulations.py       # Corre las simulaciones pesadas y guarda los resultados en data/
-│   ├── figura1_kuramoto.py      # Figura 1: sincronización sin retardo
-│   ├── figura2_kuramoto_delay.py# Figura 2: ondas viajeras con retardo (dKM)
-│   ├── figura3_autovalores.py   # Figura 3: análisis espectral (autocontenido, no depende de data/)
-│   └── figura4_evolucion_modos.py # Figura 4: espectro modal (descomposición de Fourier)
-├── data/       # Resultados numéricos intermedios (.npz), generados por run_simulations.py
-├── Figuras/    # Figuras finales en PDF, usadas en la monografía (.tex)
+│   ├── run_simulations.py            # heavy simulations, results saved to data/
+│   ├── figura1_kuramoto.py           # Figure 1: synchronization without delay
+│   ├── figura2_kuramoto_delay.py     # Figure 2: traveling waves with delay (dKM)
+│   ├── figura3_autovalores.py        # Figure 3: spectral analysis (self-contained)
+│   └── figura4_evolucion_modos.py    # Figure 4: modal spectrum (Fourier decomposition)
+├── data/       # intermediate numerical results (.npz), generated by run_simulations.py
+├── Figuras/    # final figures (PDF) used in the monograph
+├── docs/       # monograph (Spanish)
 └── requirements.txt
 ```
 
-## Cómo reproducir las figuras
+## Parameters
 
-1. Instalar dependencias:
+| Quantity | Value |
+| --- | --- |
+| Network | ring graph, N = 100, periodic boundaries |
+| Connectivity | bidirectional, 25 nearest neighbors on each side (50 per node) |
+| Intrinsic frequency | ω = 20π rad/s (10 Hz), identical for all nodes |
+| Delays | τ_kl = d_kl / v, with ring distance d_kl in cm and v = 4.84 m/s |
+| Initial phases | uniform in [−π, π), fixed random seed |
+| RK4 time step | Δt = 0.001 s |
+| Complex-model time step | ζ = 0.005 s (matrix exponential via `scipy.linalg.expm`) |
+| Coupling sweep | 20 log-spaced values of κ between 1e−4 and 1e1, 3 s per run |
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+The delayed phase difference is approximated as `θ_l(t − τ_kl) − θ_k(t) ≈ θ_l(t) − θ_k(t) − ωτ_kl`,
+which holds when the network is in a phase-locked state of frequency ω.
 
-2. Correr las simulaciones (genera los `.npz` en `data/`; puede tardar unos
-   minutos dependiendo del procesador):
+## How to reproduce the figures
 
-   ```bash
-   python scripts/run_simulations.py
-   ```
+```bash
+pip install -r requirements.txt
 
-3. Generar cada figura por separado:
+# 1. Run the simulations (writes .npz files to data/; may take a few minutes)
+python scripts/run_simulations.py
 
-   ```bash
-   python scripts/figura1_kuramoto.py
-   python scripts/figura2_kuramoto_delay.py
-   python scripts/figura3_autovalores.py   # no depende de run_simulations.py
-   python scripts/figura4_evolucion_modos.py
-   ```
+# 2. Generate each figure (PDFs are written to Figuras/)
+python scripts/figura1_kuramoto.py
+python scripts/figura2_kuramoto_delay.py
+python scripts/figura3_autovalores.py      # does not depend on run_simulations.py
+python scripts/figura4_evolucion_modos.py
+```
 
-Los PDFs quedan en `Figuras/`.
+### Reproducibility notes
 
-## Notas de reproducibilidad
+- The `κ` sweep (Figures 1 and 2, bottom panels) uses `T_END_SWEEP = 3.0 s` and 20 values of `κ` so that
+  it runs quickly. The reference paper uses longer windows (10 s) and more points; both can be changed
+  in `src/config.py`.
+- The time evolution at `κ = 0.5` (Figures 1, 2 and 4) uses a fixed seed (`SEED_TEMPORAL = 23`).
+- Figure 3 (spectral analysis) does not integrate the system: eigenvalues and eigenvectors are computed
+  directly from the coupling matrix.
 
-- El barrido en `kappa` (Figuras 1 y 2, panel inferior) usa por defecto
-  `T_END_SWEEP = 3.0 s` y 20 valores de `kappa` para que la corrida sea
-  rápida. El paper original de referencia usa ventanas más largas (10 s) y
-  más puntos; estos valores pueden ajustarse en `src/config.py`.
-- La evolución temporal a `kappa = 0.5` (Figuras 1, 2 y 4) usa una semilla
-  fija (`SEED_TEMPORAL = 23`) para que los resultados sean reproducibles.
-- La Figura 3 (análisis espectral) es la única que no depende de
-  `run_simulations.py`: los autovalores y autovectores se calculan
-  directamente y de forma analítica a partir de la matriz de acoplamiento,
-  sin necesidad de integrar el sistema.
+## References
+
+- R. C. Budzinski, T. T. Nguyen, G. B. Benigno et al. (2023). *Analytical prediction of specific
+  spatiotemporal patterns in nonlinear oscillator networks with distance-dependent time delays.*
+  Physical Review Research 5, 013159. https://doi.org/10.1103/PhysRevResearch.5.013159
+- L. Muller, J. Mináč, T. T. Nguyen (2021). *Algebraic approach to the Kuramoto model.*
+  Physical Review E 104, L022201. https://doi.org/10.1103/PhysRevE.104.L022201
+- R. C. Budzinski, T. T. Nguyen, J. Đoàn et al. (2022). *Geometry unites synchrony, chimeras, and waves
+  in nonlinear oscillator networks.* Chaos 32, 031104.
+- L. Muller, G. Piantoni et al. (2016). *Rotating waves during human sleep spindles organize global
+  patterns of activity that repeat precisely through the night.* eLife 5, e17267.
+
+## Author and license
+
+Facundo Emina, 2026.
+
+<!-- TODO: add a LICENSE file (for example MIT) and state it here. -->
