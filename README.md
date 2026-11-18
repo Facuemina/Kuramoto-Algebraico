@@ -36,23 +36,27 @@ from the network structure and the delays?
   (Figures 1 and 2).
 - **Without delays,** `r → 1` for large `κ` (global synchrony), and the dominant eigenmode is the
   homogeneous one (all phases equal).
+  <img width="1137" height="847" alt="image" src="https://github.com/user-attachments/assets/52c17f47-e2e7-4d44-9a7d-fd983bffac60" />
+
 - **With delays,** `r` stays near zero (≈ 0.1, consistent with finite-size noise) for all `κ`. This
   does not mean disorder: the network self-organizes into a **traveling wave** (Figure 2).
+  <img width="1137" height="848" alt="image" src="https://github.com/user-attachments/assets/66dc811c-0d92-4bc1-95e2-b64a6471d195" />
+
 - **The delay operator rotates the eigenvalues in the complex plane.** The homogeneous mode loses
   dominance, and a degenerate pair of higher wavenumber modes (modes 3 and 99, one the conjugate of the
   other) gets the largest real part. They represent waves of the same spatial frequency traveling in
   opposite directions (Figure 3).
+  <img width="1390" height="691" alt="image" src="https://github.com/user-attachments/assets/d322d626-e149-49f8-b9d9-c51d4caa1aa1" />
+
 - **The dominant mode emerges from random initial conditions.** Projecting the simulated state onto
   the Fourier basis shows that all modes start with similar small amplitudes, and mode 3 grows until it
   dominates (Figure 4). Small asymmetries in the initial noise break the direction degeneracy.
+  <img width="1392" height="690" alt="image" src="https://github.com/user-attachments/assets/00e8e471-87af-4ac1-9124-db89794c23ef" />
 
 **Scope.** The human connectome analysis (998-node network from the Human Connectome Project, Figure 5
 of the monograph) is taken from Budzinski et al. and is discussed in the monograph, but it is **not**
 reproduced in this repository. All simulations here use the ring graph.
 
-<!-- TODO: embed PNG versions of Figures 2, 3 and 4 here, for example:
-![Traveling wave with delays](Figuras/figura2_kuramoto_delay.png)
--->
 
 ## Repository structure
 
